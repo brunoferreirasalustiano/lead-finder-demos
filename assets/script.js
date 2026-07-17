@@ -1,171 +1,220 @@
 (() => {
-  'use strict';
-
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const header = document.querySelector('.site-header');
-  const menuButton = document.querySelector('[data-menu-button]');
-  const menu = document.querySelector('[data-menu]');
-  const progress = document.querySelector('[data-scroll-progress]');
-  const toast = document.querySelector('[data-toast]');
-  let toastTimer;
+  const finePointer = window.matchMedia('(pointer: fine)').matches;
 
+  const qs = (selector, scope = document) => scope.querySelector(selector);
+  const qsa = (selector, scope = document) => [...scope.querySelectorAll(selector)];
+
+  // Ano automático
+  qsa('[data-year]').forEach((node) => {
+    node.textContent = String(new Date().getFullYear());
+  });
+
+  // Barra de progresso e header inteligente
+  const progress = qs('[data-scroll-progress]');
+  const header = qs('[data-header]');
+  let lastScrollY = window.scrollY;
+  let ticking = false;
+
+  const updateScrollUI = () => {
+    const current = window.scrollY;
+    const max = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
+    if (progress) progress.style.width = `${Math.min((current / max) * 100, 100)}%`;
+
+    if (header) {
+      const movingDown = current > lastScrollY;
+      header.classList.toggle('is-hidden', movingDown && current > 180);
+    }
+    lastScrollY = current;
+    ticking = false;
+  };
+
+  window.addEventListener('scroll', () => {
+    if (!ticking) {
+      window.requestAnimationFrame(updateScrollUI);
+      ticking = true;
+    }
+  }, { passive: true });
+  updateScrollUI();
+
+  // Menu mobile acessível
+  const menuButton = qs('[data-menu-button]');
+  const menu = qs('[data-menu]');
   const closeMenu = () => {
-    if (!menu || !menuButton) return;
+    if (!menuButton || !menu) return;
     menu.classList.remove('is-open');
     menuButton.setAttribute('aria-expanded', 'false');
-    document.body.classList.remove('menu-open');
   };
 
   if (menuButton && menu) {
     menuButton.addEventListener('click', () => {
-      const isOpen = menu.classList.toggle('is-open');
-      menuButton.setAttribute('aria-expanded', String(isOpen));
-      document.body.classList.toggle('menu-open', isOpen);
+      const open = !menu.classList.contains('is-open');
+      menu.classList.toggle('is-open', open);
+      menuButton.setAttribute('aria-expanded', String(open));
     });
 
     menu.addEventListener('click', (event) => {
       if (event.target.closest('a')) closeMenu();
     });
 
-    document.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape') closeMenu();
-    });
-
     document.addEventListener('click', (event) => {
       if (!menu.contains(event.target) && !menuButton.contains(event.target)) closeMenu();
     });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        closeMenu();
+        menuButton.focus();
+      }
+    });
   }
 
-  const updateScrollUi = () => {
-    const top = window.scrollY;
-    header?.classList.toggle('is-scrolled', top > 12);
-    if (progress) {
-      const max = document.documentElement.scrollHeight - window.innerHeight;
-      const ratio = max > 0 ? Math.min(1, top / max) : 0;
-      progress.style.width = `${ratio * 100}%`;
-    }
-  };
+  // Revelação progressiva
+  const revealNodes = qsa('.reveal');
+  if (reducedMotion || !('IntersectionObserver' in window)) {
+    revealNodes.forEach((node) => node.classList.add('is-visible'));
+  } else {
+    const revealObserver = new IntersectionObserver((entries, observer) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        const delay = Number(entry.target.dataset.delay || 0);
+        window.setTimeout(() => entry.target.classList.add('is-visible'), delay);
+        observer.unobserve(entry.target);
+      });
+    }, { threshold: .16, rootMargin: '0px 0px -7% 0px' });
+    revealNodes.forEach((node) => revealObserver.observe(node));
+  }
 
-  updateScrollUi();
-  window.addEventListener('scroll', updateScrollUi, { passive: true });
+  // Navegação ativa por seção
+  const navLinks = qsa('[data-menu] a[href^="#"]');
+  const sections = navLinks
+    .map((link) => qs(link.getAttribute('href')))
+    .filter(Boolean);
 
-  document.querySelectorAll('[data-year]').forEach((node) => {
-    node.textContent = String(new Date().getFullYear());
-  });
+  if (sections.length && 'IntersectionObserver' in window) {
+    const sectionObserver = new IntersectionObserver((entries) => {
+      const activeEntry = entries
+        .filter((entry) => entry.isIntersecting)
+        .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+      if (!activeEntry) return;
+      navLinks.forEach((link) => {
+        link.classList.toggle('is-active', link.getAttribute('href') === `#${activeEntry.target.id}`);
+      });
+    }, { rootMargin: '-35% 0px -55% 0px', threshold: [0, .25, .6] });
+    sections.forEach((section) => sectionObserver.observe(section));
+  }
 
+  // Toast demonstrativo
+  const toast = qs('[data-toast]');
+  let toastTimer;
   const showToast = (message) => {
     if (!toast) return;
     toast.textContent = message;
     toast.classList.add('is-visible');
-    clearTimeout(toastTimer);
+    window.clearTimeout(toastTimer);
     toastTimer = window.setTimeout(() => toast.classList.remove('is-visible'), 4300);
   };
 
-  document.querySelectorAll('[data-demo-action]').forEach((button) => {
-    button.addEventListener('click', (event) => {
+  qsa('[data-demo-action]').forEach((control) => {
+    control.addEventListener('click', (event) => {
       event.preventDefault();
-      showToast(button.dataset.demoMessage || 'Demonstração: este botão será conectado ao WhatsApp comercial após aprovação do cliente.');
+      showToast(control.dataset.demoMessage || 'Demonstração: este botão será conectado ao canal oficial somente após aprovação do cliente.');
     });
   });
 
-  document.querySelectorAll('[data-copy-email]').forEach((button) => {
-    button.addEventListener('click', async () => {
-      const email = button.dataset.copyEmail;
-      try {
-        await navigator.clipboard.writeText(email);
-        showToast(`E-mail copiado: ${email}`);
-      } catch {
-        showToast(email);
-      }
-    });
-  });
-
-  const revealItems = document.querySelectorAll('.reveal');
-  if (!reducedMotion && 'IntersectionObserver' in window) {
-    const revealObserver = new IntersectionObserver((entries, observer) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('is-visible');
-          observer.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.12, rootMargin: '0px 0px -40px' });
-    revealItems.forEach((item) => revealObserver.observe(item));
-  } else {
-    revealItems.forEach((item) => item.classList.add('is-visible'));
-  }
-
-  const counters = document.querySelectorAll('[data-counter]');
+  // Contadores animados
+  const counters = qsa('[data-count]');
   const animateCounter = (node) => {
-    const target = Number(node.dataset.counter || 0);
+    const target = Number(node.dataset.count || 0);
     const suffix = node.dataset.suffix || '';
     const duration = 1100;
-    const startTime = performance.now();
-    const step = (now) => {
-      const progressValue = Math.min(1, (now - startTime) / duration);
+    const start = performance.now();
+    const draw = (time) => {
+      const progressValue = Math.min((time - start) / duration, 1);
       const eased = 1 - Math.pow(1 - progressValue, 3);
       node.textContent = `${Math.round(target * eased)}${suffix}`;
-      if (progressValue < 1) requestAnimationFrame(step);
+      if (progressValue < 1) window.requestAnimationFrame(draw);
     };
-    requestAnimationFrame(step);
+    window.requestAnimationFrame(draw);
   };
 
-  if ('IntersectionObserver' in window && !reducedMotion) {
+  if (reducedMotion || !('IntersectionObserver' in window)) {
+    counters.forEach((node) => {
+      node.textContent = `${node.dataset.count || 0}${node.dataset.suffix || ''}`;
+    });
+  } else {
     const counterObserver = new IntersectionObserver((entries, observer) => {
       entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          animateCounter(entry.target);
-          observer.unobserve(entry.target);
-        }
-      });
-    }, { threshold: .6 });
-    counters.forEach((counter) => counterObserver.observe(counter));
-  } else {
-    counters.forEach((counter) => {
-      counter.textContent = `${counter.dataset.counter || 0}${counter.dataset.suffix || ''}`;
-    });
-  }
-
-  const sections = [...document.querySelectorAll('main section[id]')];
-  const navLinks = [...document.querySelectorAll('.nav-links a[href^="#"]')];
-  if (sections.length && navLinks.length && 'IntersectionObserver' in window) {
-    const navObserver = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
         if (!entry.isIntersecting) return;
-        navLinks.forEach((link) => link.classList.toggle('is-active', link.getAttribute('href') === `#${entry.target.id}`));
+        animateCounter(entry.target);
+        observer.unobserve(entry.target);
       });
-    }, { rootMargin: '-35% 0px -55% 0px' });
-    sections.forEach((section) => navObserver.observe(section));
+    }, { threshold: .7 });
+    counters.forEach((node) => counterObserver.observe(node));
   }
 
-  document.querySelectorAll('[data-tabs]').forEach((tabsRoot) => {
-    const buttons = [...tabsRoot.querySelectorAll('[role="tab"]')];
-    const panels = [...tabsRoot.querySelectorAll('[role="tabpanel"]')];
-    const activate = (button) => {
-      buttons.forEach((item) => item.setAttribute('aria-selected', String(item === button)));
-      panels.forEach((panel) => { panel.hidden = panel.id !== button.getAttribute('aria-controls'); });
+  // FAQ em accordion
+  qsa('[data-faq-button]').forEach((button) => {
+    const panel = qs(`#${button.getAttribute('aria-controls')}`);
+    if (!panel) return;
+    panel.hidden = button.getAttribute('aria-expanded') !== 'true';
+    button.addEventListener('click', () => {
+      const expanded = button.getAttribute('aria-expanded') === 'true';
+      button.setAttribute('aria-expanded', String(!expanded));
+      panel.hidden = expanded;
+    });
+  });
+
+  // Tabs de conteúdo
+  qsa('[data-tabs]').forEach((tabList) => {
+    const buttons = qsa('[role="tab"]', tabList);
+    const root = tabList.closest('[data-tabs-root]') || document;
+    const activateTab = (button) => {
+      buttons.forEach((item) => {
+        const selected = item === button;
+        item.setAttribute('aria-selected', String(selected));
+        item.tabIndex = selected ? 0 : -1;
+        const panel = qs(`#${item.getAttribute('aria-controls')}`, root);
+        if (panel) panel.hidden = !selected;
+      });
     };
+
     buttons.forEach((button, index) => {
-      button.addEventListener('click', () => activate(button));
+      button.addEventListener('click', () => activateTab(button));
       button.addEventListener('keydown', (event) => {
-        if (!['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
+        if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
         event.preventDefault();
-        const next = event.key === 'ArrowRight' ? (index + 1) % buttons.length : (index - 1 + buttons.length) % buttons.length;
-        buttons[next].focus();
-        activate(buttons[next]);
+        let nextIndex = index;
+        if (event.key === 'ArrowRight') nextIndex = (index + 1) % buttons.length;
+        if (event.key === 'ArrowLeft') nextIndex = (index - 1 + buttons.length) % buttons.length;
+        if (event.key === 'Home') nextIndex = 0;
+        if (event.key === 'End') nextIndex = buttons.length - 1;
+        buttons[nextIndex].focus();
+        activateTab(buttons[nextIndex]);
       });
     });
   });
 
-  if (!reducedMotion && window.matchMedia('(pointer: fine)').matches) {
-    document.querySelectorAll('.interactive-card').forEach((card) => {
+  // Tilt moderado e original em desktop
+  if (finePointer && !reducedMotion) {
+    qsa('[data-tilt]').forEach((card) => {
       card.addEventListener('pointermove', (event) => {
         const rect = card.getBoundingClientRect();
         const x = (event.clientX - rect.left) / rect.width - .5;
         const y = (event.clientY - rect.top) / rect.height - .5;
-        card.style.transform = `perspective(900px) rotateX(${y * -4}deg) rotateY(${x * 5}deg) translateY(-4px)`;
+        card.style.transform = `perspective(900px) rotateX(${-y * 4}deg) rotateY(${x * 5}deg) translateY(-3px)`;
       });
-      card.addEventListener('pointerleave', () => { card.style.transform = ''; });
+      card.addEventListener('pointerleave', () => {
+        card.style.transform = '';
+      });
+    });
+
+    qsa('[data-parallax]').forEach((node) => {
+      window.addEventListener('pointermove', (event) => {
+        const x = (event.clientX / window.innerWidth - .5) * Number(node.dataset.parallax || 12);
+        const y = (event.clientY / window.innerHeight - .5) * Number(node.dataset.parallax || 12);
+        node.style.translate = `${x}px ${y}px`;
+      }, { passive: true });
     });
   }
 })();
