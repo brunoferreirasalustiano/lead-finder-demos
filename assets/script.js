@@ -31,7 +31,7 @@
   document.querySelectorAll('[data-demo-action]').forEach((link) => {
     link.addEventListener('click', (event) => {
       event.preventDefault();
-      showToast('Demonstração: este botão seria conectado ao WhatsApp comercial da empresa após aprovação.');
+      showToast('Ação demonstrativa: nenhum contato ou dado foi enviado. O uso deste catálogo exige autorização manual.');
     });
   });
 })();
