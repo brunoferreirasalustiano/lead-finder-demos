@@ -1,5 +1,5 @@
 import { readFile, stat } from 'node:fs/promises';
-import { dirname, extname, resolve, relative, sep } from 'node:path';
+import { dirname, extname, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -70,16 +70,17 @@ for (const path of htmlFiles) {
 for (const path of ['assets/styles.css', 'assets/script.js', ...htmlFiles]) {
   if (!(await isFile(resolve(root, path)))) continue;
   const content = await readFile(resolve(root, path), 'utf8');
+  const withoutRemoteAssetUrls = content.replace(/https?:\/\/(?:images\.)?unsplash\.com\/[^\s"'<>)]*/gi, '[remote-image]');
   const checks = [
-    ['localhost-or-loopback', /\b(?:localhost|127\.0\.0\.1|0\.0\.0\.0)\b/i],
-    ['tracking-or-analytics', /(?:google-analytics\.com|googletagmanager\.com|facebook\.com\/tr|connect\.facebook\.net|hotjar\.com|clarity\.ms|segment\.com|analytics\s*\()/i],
-    ['network-api', /\b(?:fetch\s*\(|XMLHttpRequest\b|WebSocket\s*\()/i],
-    ['secret-pattern', /(?:-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|\bgh[pousr]_[A-Za-z0-9]{20,}|\bAKIA[0-9A-Z]{16}\b|\b(?:api[_-]?key|client[_-]?secret|access[_-]?token)\s*[:=]\s*["'][^"']{8,})/i],
-    ['phone-number', /(?:\+?55\s*)?(?:\(?\d{2}\)?[\s.-]*)?9?\d{4}[\s.-]*\d{4}\b/],
-    ['real-contact-link', /(?:mailto:|tel:|https?:\/\/(?:wa\.me|api\.whatsapp\.com))/i],
+    ['localhost-or-loopback', /\b(?:localhost|127\.0\.0\.1|0\.0\.0\.0)\b/i, content],
+    ['tracking-or-analytics', /(?:google-analytics\.com|googletagmanager\.com|facebook\.com\/tr|connect\.facebook\.net|hotjar\.com|clarity\.ms|segment\.com|analytics\s*\()/i, content],
+    ['network-api', /\b(?:fetch\s*\(|XMLHttpRequest\b|WebSocket\s*\()/i, content],
+    ['secret-pattern', /(?:-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|\bgh[pousr]_[A-Za-z0-9]{20,}|\bAKIA[0-9A-Z]{16}\b|\b(?:api[_-]?key|client[_-]?secret|access[_-]?token)\s*[:=]\s*["'][^"']{8,})/i, content],
+    ['phone-number', /(?:\+?55\s*)?(?:\(?\d{2}\)?[\s.-]*)?9?\d{4}[\s.-]*\d{4}\b/, withoutRemoteAssetUrls],
+    ['real-contact-link', /(?:mailto:|tel:|https?:\/\/(?:wa\.me|api\.whatsapp\.com))/i, content],
   ];
-  for (const [category, pattern] of checks) {
-    if (pattern.test(content)) report(path, category);
+  for (const [category, pattern, source] of checks) {
+    if (pattern.test(source)) report(path, category);
   }
 
   if (extname(path) === '.css') {
