@@ -1,0 +1,33 @@
+name: Apply editorial redesign
+
+on:
+  push:
+    branches: [feat/editorial-conversion-redesign]
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: "!contains(github.event.head_commit.message, '[redesign-applied]')"
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/editorial-conversion-redesign
+      - name: Apply validated site bundle
+        shell: bash
+        run: |
+          cat .site-bundle/part-* | base64 --decode > /tmp/site-build.tar.gz
+          tar -xzf /tmp/site-build.tar.gz -C .
+          rm -rf .site-bundle .github/workflows/apply-editorial-redesign.yml
+          node --check assets/landing.js
+          node --check assets/demo-premium.js
+          node scripts/validate-static-site.mjs
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "feat: apply editorial conversion redesign [redesign-applied]"
+          git push origin HEAD:feat/editorial-conversion-redesign
