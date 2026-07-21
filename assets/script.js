@@ -26,6 +26,17 @@
   const whatsappMessage='Olá, Bruno! Conheci a Lead Finder Brasil pelo site e gostaria de saber mais sobre a Landing Page Essencial.';
   const whatsappUrl=`${whatsappBase}${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`;
 
+  document.querySelectorAll('.notice').forEach(node=>{
+    if(node.textContent.includes('WhatsApp real ainda está desativado')){
+      node.textContent='Este botão abre o WhatsApp oficial da Lead Finder Brasil. Nenhuma informação é armazenada neste site.';
+    }
+  });
+
+  const modalTitle=document.querySelector('#modal-title');
+  const modalText=modalTitle?.nextElementSibling;
+  if(modalTitle)modalTitle.textContent='Contato pelo WhatsApp';
+  if(modalText)modalText.textContent='Use os botões da página para iniciar uma conversa com a Lead Finder Brasil pelo WhatsApp oficial.';
+
   if(!reduceMotion){
     const style=document.createElement('style');
     style.textContent=`
@@ -165,15 +176,13 @@
   document.querySelectorAll('[data-contact]').forEach(control=>{
     const label=control.textContent.trim();
     control.setAttribute('aria-label',`${label} — abrir WhatsApp da Lead Finder Brasil`);
-    control.addEventListener('click',event=>{
-      event.preventDefault();
-      const opened=window.open(whatsappUrl,'_blank','noopener,noreferrer');
-      if(opened){
-        opened.opener=null;
-      }else{
-        window.location.assign(whatsappUrl);
-      }
-    });
+    if(control instanceof HTMLAnchorElement){
+      control.href=whatsappUrl;
+      control.target='_blank';
+      control.rel='noopener noreferrer';
+      return;
+    }
+    control.addEventListener('click',()=>window.location.assign(whatsappUrl));
   });
 
   const modal=document.querySelector('[data-contact-modal]');
