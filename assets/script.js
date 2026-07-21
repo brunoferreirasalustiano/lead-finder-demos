@@ -29,6 +29,7 @@
         --image-delay:0ms;
         backface-visibility:hidden;
       }
+      .project-media.image-unfold{position:relative}
       .image-unfold{
         clip-path:polygon(0 0,18% 0,0 18%,0 100%);
         opacity:.18;
