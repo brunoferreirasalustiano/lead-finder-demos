@@ -21,6 +21,10 @@
 
   const reduceMotion=window.matchMedia('(prefers-reduced-motion:reduce)').matches;
   const supportsObserver='IntersectionObserver' in window;
+  const whatsappNumber='5519971519337';
+  const whatsappBase='https://wa.me/';
+  const whatsappMessage='Olá, Bruno! Conheci a Lead Finder Brasil pelo site e gostaria de saber mais sobre a Landing Page Essencial.';
+  const whatsappUrl=`${whatsappBase}${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`;
 
   if(!reduceMotion){
     const style=document.createElement('style');
@@ -158,22 +162,26 @@
     });
   });
 
+  document.querySelectorAll('[data-contact]').forEach(control=>{
+    const label=control.textContent.trim();
+    control.setAttribute('aria-label',`${label} — abrir WhatsApp da Lead Finder Brasil`);
+    control.addEventListener('click',event=>{
+      event.preventDefault();
+      const opened=window.open(whatsappUrl,'_blank','noopener,noreferrer');
+      if(opened){
+        opened.opener=null;
+      }else{
+        window.location.assign(whatsappUrl);
+      }
+    });
+  });
+
   const modal=document.querySelector('[data-contact-modal]');
   const closeModal=()=>{
     if(!modal)return;
     modal.classList.remove('open');
     modal.setAttribute('aria-hidden','true');
   };
-
-  document.querySelectorAll('[data-contact]').forEach(control=>{
-    control.addEventListener('click',event=>{
-      event.preventDefault();
-      if(!modal)return;
-      modal.classList.add('open');
-      modal.setAttribute('aria-hidden','false');
-      modal.querySelector('[data-modal-close]')?.focus();
-    });
-  });
 
   modal?.addEventListener('click',event=>{
     if(event.target===modal||event.target.closest('[data-modal-close]'))closeModal();
