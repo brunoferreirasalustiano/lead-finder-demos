@@ -4,12 +4,22 @@ import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const siteBase = 'https://brunoferreirasalustiano.github.io/lead-finder-demos/';
-const htmlFiles = [
-  'index.html',
+const demoHtmlFiles = [
   'barbearia/index.html',
   'oficina/index.html',
   'restaurante/index.html',
   'prestador-servicos/index.html',
+];
+const institutionalHtmlFiles = [
+  'sobre/index.html',
+  'servicos/index.html',
+  'presenca-digital/index.html',
+  'privacidade/index.html',
+];
+const htmlFiles = [
+  'index.html',
+  ...demoHtmlFiles,
+  ...institutionalHtmlFiles,
 ];
 const pageUrls = new Map([
   ['index.html', siteBase],
@@ -17,6 +27,10 @@ const pageUrls = new Map([
   ['oficina/index.html', `${siteBase}oficina/`],
   ['restaurante/index.html', `${siteBase}restaurante/`],
   ['prestador-servicos/index.html', `${siteBase}prestador-servicos/`],
+  ['sobre/index.html', `${siteBase}sobre/`],
+  ['servicos/index.html', `${siteBase}servicos/`],
+  ['presenca-digital/index.html', `${siteBase}presenca-digital/`],
+  ['privacidade/index.html', `${siteBase}privacidade/`],
 ]);
 const requiredFiles = [
   ...htmlFiles,
@@ -103,7 +117,7 @@ for (const path of htmlFiles) {
   if (!/<meta\b[^>]*\bname=["']twitter:card["'][^>]*>/i.test(content)) report(path, 'twitter-card-missing');
   if (!/<script\b[^>]*\btype=["']application\/ld\+json["'][^>]*>/i.test(content)) report(path, 'structured-data-missing');
   if ((content.match(/<h1\b/gi) ?? []).length !== 1) report(path, 'single-h1-required');
-  if (!/(?:fictíci[oa]s?|fictícios)/iu.test(content)) report(path, 'fictional-content-notice-missing');
+  if (demoHtmlFiles.includes(path) && !/(?:fictíci[oa]s?|fictícios)/iu.test(content)) report(path, 'fictional-content-notice-missing');
   if (/<script\b[^>]*\bsrc=["'](?:https?:)?\/\//i.test(content)) report(path, 'remote-script');
   if (/<form\b[^>]*\baction=["'](?:https?:)?\/\//i.test(content)) report(path, 'external-form-action');
 
@@ -124,6 +138,17 @@ for (const path of htmlFiles) {
     if (!/Pacote Essencial/iu.test(content)) report(path, 'essential-package-missing');
     if (!/Bruno F\. Salustiano/iu.test(content)) report(path, 'responsible-person-missing');
     if (!/Este site não possui formulários, cookies próprios, analytics ou armazenamento/iu.test(content)) report(path, 'privacy-summary-missing');
+  }
+
+  if (path === 'presenca-digital/index.html') {
+    if (!/empresas perto de mim/iu.test(content)) report(path, 'local-search-example-missing');
+    if (!/ferramentas de IA/iu.test(content)) report(path, 'ai-discovery-copy-missing');
+    if (!/não garante primeira posição/iu.test(content)) report(path, 'seo-guarantee-disclaimer-missing');
+  }
+
+  if (path === 'privacidade/index.html') {
+    if (!/sem coleta direta de dados pessoais/iu.test(content)) report(path, 'privacy-purpose-missing');
+    if (!/não possui mecanismos próprios de rastreamento/iu.test(content)) report(path, 'tracking-disclaimer-missing');
   }
 
   const referencePattern = /\b(?:href|src)\s*=\s*["']([^"']+)["']/gi;
