@@ -37,6 +37,39 @@
   if(modalTitle)modalTitle.textContent='Contato pelo WhatsApp';
   if(modalText)modalText.textContent='Use os botões da página para iniciar uma conversa com a Lead Finder Brasil pelo WhatsApp oficial.';
 
+  const pageTheme=document.documentElement.dataset.theme;
+  const firstMeta=document.querySelector('.demo-meta > div:first-child');
+  const firstMetaTitle=firstMeta?.querySelector('dt');
+  const firstMetaValue=firstMeta?.querySelector('dd');
+  const demoCopy={
+    barber:{title:'Atendimento',value:'Com hora marcada'},
+    auto:{title:'Orçamento',value:'Antes do serviço'},
+    food:{title:'Reservas',value:'Via WhatsApp'},
+    service:{title:'Atendimento',value:'Por região'}
+  };
+  if(pageTheme&&demoCopy[pageTheme]&&firstMetaTitle&&firstMetaValue){
+    firstMetaTitle.textContent=demoCopy[pageTheme].title;
+    firstMetaValue.textContent=demoCopy[pageTheme].value;
+  }
+
+  if(pageTheme==='barber'){
+    const demoEyebrow=document.querySelector('.demo-hero .eyebrow');
+    const aboutTitle=document.querySelector('#sobre h2');
+    if(demoEyebrow)demoEyebrow.textContent='Barbearia · conteúdo fictício';
+    if(aboutTitle)aboutTitle.textContent='Personalidade, serviços e atendimento bem apresentados.';
+  }
+
+  if(!pageTheme){
+    const benefitLabels=['ÁGIL','CLARA','DIRETO','FLEXÍVEL'];
+    document.querySelectorAll('.benefits .benefit strong').forEach((node,index)=>{
+      if(benefitLabels[index])node.textContent=benefitLabels[index];
+    });
+    const benefitTitles=document.querySelectorAll('.benefits .benefit h3');
+    if(benefitTitles[1])benefitTitles[1].textContent='Presença organizada';
+    const beforeAfterTitle=document.querySelector('.before-after')?.closest('.section')?.querySelector('.section-head h2');
+    if(beforeAfterTitle)beforeAfterTitle.innerHTML='Da rede social para uma presença <em>organizada</em>.';
+  }
+
   if(!reduceMotion){
     const style=document.createElement('style');
     style.textContent=`
