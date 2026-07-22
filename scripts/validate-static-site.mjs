@@ -31,6 +31,7 @@ const authorizedWhatsapp = Object.freeze({
   phone: '5519971519337',
   displayPhone: '+55 19 97151-9337',
   baseUrl: 'https://wa.me/',
+  urlPrefix: 'https://wa.me/5519971519337',
 });
 const authorizedEmail = 'leadfinderbrasil@gmail.com';
 const problems = new Map();
@@ -106,6 +107,25 @@ for (const path of htmlFiles) {
   if (/<script\b[^>]*\bsrc=["'](?:https?:)?\/\//i.test(content)) report(path, 'remote-script');
   if (/<form\b[^>]*\baction=["'](?:https?:)?\/\//i.test(content)) report(path, 'external-form-action');
 
+  const contactTags = [...content.matchAll(/<a\b[^>]*\bdata-contact\b[^>]*>/gi)].map(match => match[0]);
+  if (!contactTags.length) report(path, 'contact-link-missing');
+  for (const tag of contactTags) {
+    const href = tag.match(/\bhref=["']([^"']+)["']/i)?.[1];
+    const message = tag.match(/\bdata-message=["']([^"']+)["']/i)?.[1];
+    if (!href || !href.startsWith(authorizedWhatsapp.urlPrefix)) report(path, 'contact-href-not-resilient');
+    if (!message?.trim()) report(path, 'contact-message-missing');
+  }
+  if (/\bhref=["']#["'][^>]*\bdata-contact\b|\bdata-contact\b[^>]*\bhref=["']#["']/i.test(content)) report(path, 'placeholder-contact-href');
+  if (/(?:>\s*Agendar horário\s*<|>\s*Reservar mesa\s*<|>\s*Pedir orçamento\s*<)/iu.test(content)) report(path, 'ambiguous-demo-contact-label');
+
+  if (path === 'index.html') {
+    if (/oferta de lançamento/iu.test(content)) report(path, 'unsupported-launch-offer');
+    if (/a partir de\s*(?:<[^>]+>\s*)*R\$\s*650/iu.test(content)) report(path, 'ambiguous-base-price');
+    if (!/Pacote Essencial/iu.test(content)) report(path, 'essential-package-missing');
+    if (!/Bruno F\. Salustiano/iu.test(content)) report(path, 'responsible-person-missing');
+    if (!/Este site não possui formulários, cookies próprios, analytics ou armazenamento/iu.test(content)) report(path, 'privacy-summary-missing');
+  }
+
   const referencePattern = /\b(?:href|src)\s*=\s*["']([^"']+)["']/gi;
   for (const match of content.matchAll(referencePattern)) {
     const target = localPathFromReference(path, match[1]);
@@ -122,6 +142,8 @@ for (const path of ['assets/styles.css', 'assets/script.js', ...htmlFiles]) {
   if (path === 'assets/script.js') {
     if (!content.includes(`const whatsappNumber='${authorizedWhatsapp.phone}'`)) report(path, 'authorized-whatsapp-number-missing');
     if (!content.includes(`const whatsappBase='${authorizedWhatsapp.baseUrl}'`)) report(path, 'authorized-whatsapp-base-missing');
+    if (!content.includes('data-message') && !content.includes('dataset.message')) report(path, 'per-page-contact-message-support-missing');
+    if (!content.includes('Pacote Essencial')) report(path, 'default-package-message-missing');
   }
 
   const checks = [
