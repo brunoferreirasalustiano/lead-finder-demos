@@ -40,6 +40,13 @@ jobs:
           test -f .pages-artifact/presenca-digital/index.html
           test -f .pages-artifact/sobre/index.html
           test -f .pages-artifact/privacidade/index.html
+      - name: Validate Search Console verification artifact
+        run: |
+          printf '%s\n' 'google-site-verification: google-ci-verification.html' > google-ci-verification.html
+          node scripts/prepare-pages-artifact.mjs
+          test -f .pages-artifact/google-ci-verification.html
+          grep -Fxq 'google-site-verification: google-ci-verification.html' .pages-artifact/google-ci-verification.html
+          rm google-ci-verification.html
 
   deploy:
     if: github.event_name != 'pull_request'

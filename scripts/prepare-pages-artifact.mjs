@@ -34,6 +34,17 @@ for (const entry of allowlist) {
   await cp(source, target, { recursive: (await stat(source)).isDirectory() });
 }
 
+const rootEntries = await readdir(root);
+const verificationFiles = rootEntries.filter(entry => /^google[a-z0-9_-]+\.html$/i.test(entry));
+for (const entry of verificationFiles) {
+  const source = resolve(root, entry);
+  const verificationContent = (await readFile(source, 'utf8')).trim();
+  if (verificationContent !== `google-site-verification: ${entry}`) {
+    throw new Error(`invalid Search Console verification file: ${entry}`);
+  }
+  await cp(source, resolve(destination, entry));
+}
+
 const artifactHome = resolve(destination, 'index.html');
 const homeContent = await readFile(artifactHome, 'utf8');
 const heroPrimaryMarkup = `<p class="lead">${heroPrimaryCopy}</p>`;
@@ -67,7 +78,7 @@ for (const route of ['servicos/', 'presenca-digital/', 'sobre/', 'privacidade/']
 await writeFile(artifactHome, homeWithInstitutionalLinks, 'utf8');
 
 const actual = (await readdir(destination)).sort();
-const expected = [...allowlist].sort();
+const expected = [...allowlist, ...verificationFiles].sort();
 if (actual.length !== expected.length || actual.some((entry, index) => entry !== expected[index])) {
   throw new Error('artifact allowlist mismatch');
 }
@@ -82,4 +93,4 @@ for (const forbidden of ['.git', '.github', 'README.md', 'scripts']) {
   }
 }
 
-process.stdout.write('pages-artifact | valid\n');
+process.stdout.write(`pages-artifact | valid | search-console-files=${verificationFiles.length}\n`);
