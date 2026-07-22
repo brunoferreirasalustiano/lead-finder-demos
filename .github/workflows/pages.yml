@@ -32,6 +32,14 @@ jobs:
           node scripts/prepare-pages-artifact.mjs
           grep -Fq 'empresas perto de mim' .pages-artifact/index.html
           grep -Fq 'ferramentas de IA' .pages-artifact/index.html
+          grep -Fq 'href="servicos/"' .pages-artifact/index.html
+          grep -Fq 'href="presenca-digital/"' .pages-artifact/index.html
+          grep -Fq 'href="sobre/"' .pages-artifact/index.html
+          grep -Fq 'href="privacidade/"' .pages-artifact/index.html
+          test -f .pages-artifact/servicos/index.html
+          test -f .pages-artifact/presenca-digital/index.html
+          test -f .pages-artifact/sobre/index.html
+          test -f .pages-artifact/privacidade/index.html
 
   deploy:
     if: github.event_name != 'pull_request'
