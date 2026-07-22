@@ -9,6 +9,7 @@ const allowlist = [
   '.nojekyll',
   'robots.txt',
   'sitemap.xml',
+  'sitemap.txt',
   'assets',
   'barbearia',
   'oficina',

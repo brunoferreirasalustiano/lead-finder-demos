@@ -2,3 +2,4 @@ User-agent: *
 Allow: /
 
 Sitemap: https://brunoferreirasalustiano.github.io/lead-finder-demos/sitemap.xml
+Sitemap: https://brunoferreirasalustiano.github.io/lead-finder-demos/sitemap.txt
