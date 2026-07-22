@@ -23,8 +23,8 @@
   const supportsObserver='IntersectionObserver' in window;
   const whatsappNumber='5519971519337';
   const whatsappBase='https://wa.me/';
-  const whatsappMessage='Olá, Bruno! Conheci a Lead Finder Brasil pelo site e gostaria de saber mais sobre a Landing Page Essencial.';
-  const whatsappUrl=`${whatsappBase}${whatsappNumber}?text=${encodeURIComponent(whatsappMessage)}`;
+  const whatsappDefaultMessage='Olá, Bruno! Conheci a Lead Finder Brasil pelo site e gostaria de saber mais sobre o Pacote Essencial de landing page.';
+  const buildWhatsappUrl=message=>`${whatsappBase}${whatsappNumber}?text=${encodeURIComponent(message)}`;
 
   if(!reduceMotion){
     const style=document.createElement('style');
@@ -164,6 +164,8 @@
 
   document.querySelectorAll('[data-contact]').forEach(control=>{
     const label=control.textContent.trim();
+    const message=control.dataset.message?.trim()||whatsappDefaultMessage;
+    const whatsappUrl=buildWhatsappUrl(message);
     control.setAttribute('aria-label',`${label} — abrir WhatsApp da Lead Finder Brasil`);
     if(control instanceof HTMLAnchorElement){
       control.href=whatsappUrl;
