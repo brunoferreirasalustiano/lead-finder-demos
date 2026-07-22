@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://brunoferreirasalustiano.github.io/lead-finder-demos/sitemap.xml
