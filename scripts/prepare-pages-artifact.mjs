@@ -7,6 +7,8 @@ const destination = resolve(root, '.pages-artifact');
 const allowlist = [
   'index.html',
   '.nojekyll',
+  'robots.txt',
+  'sitemap.xml',
   'assets',
   'barbearia',
   'oficina',
