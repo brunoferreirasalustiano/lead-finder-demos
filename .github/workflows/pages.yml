@@ -40,6 +40,12 @@ jobs:
           test -f .pages-artifact/presenca-digital/index.html
           test -f .pages-artifact/sobre/index.html
           test -f .pages-artifact/privacidade/index.html
+          test -f .pages-artifact/sitemap.xml
+          test -f .pages-artifact/sitemap.txt
+          test "$(wc -l < .pages-artifact/sitemap.txt)" -eq 9
+          grep -Fxq 'https://brunoferreirasalustiano.github.io/lead-finder-demos/' .pages-artifact/sitemap.txt
+          grep -Fxq 'https://brunoferreirasalustiano.github.io/lead-finder-demos/prestador-servicos/' .pages-artifact/sitemap.txt
+          grep -Fxq 'Sitemap: https://brunoferreirasalustiano.github.io/lead-finder-demos/sitemap.txt' .pages-artifact/robots.txt
       - name: Validate Search Console verification artifact
         run: |
           printf '%s\n' 'google-site-verification: google-ci-verification.html' > google-ci-verification.html
