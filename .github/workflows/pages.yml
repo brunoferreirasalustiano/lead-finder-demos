@@ -27,6 +27,11 @@ jobs:
           persist-credentials: false
       - name: Validate static catalog
         run: node scripts/validate-static-site.mjs
+      - name: Validate generated Pages artifact
+        run: |
+          node scripts/prepare-pages-artifact.mjs
+          grep -Fq 'empresas perto de mim' .pages-artifact/index.html
+          grep -Fq 'ferramentas de IA' .pages-artifact/index.html
 
   deploy:
     if: github.event_name != 'pull_request'
