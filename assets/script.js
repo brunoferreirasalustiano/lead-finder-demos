@@ -191,3 +191,215 @@
     if(event.key==='Escape')closeModal();
   });
 })();
+
+// Lead Finder Brasil: troca de imagens no tamanho original
+(() => {
+  const root = document.querySelector("[data-hero-gallery]");
+  if (!root) return;
+
+  const mainFrame = root.querySelector("[data-gallery-main]");
+  const nextFrame = root.querySelector("[data-gallery-next]");
+  const mainImage = root.querySelector("[data-gallery-main-image]");
+  const nextImage = root.querySelector("[data-gallery-next-image]");
+  const mainLabel = root.querySelector("[data-gallery-main-label]");
+  const nextLabel = root.querySelector("[data-gallery-next-label]");
+  const status = root.querySelector("[data-gallery-status]");
+
+  if (
+    !mainFrame ||
+    !nextFrame ||
+    !mainImage ||
+    !nextImage ||
+    !mainLabel ||
+    !nextLabel
+  ) {
+    return;
+  }
+
+  const items = [
+    {
+      label: "Barbearia",
+      src: "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=1100&q=74&auto=format&fit=crop",
+      alt: "Barbeiro fazendo acabamento em cliente",
+    },
+    {
+      label: "Restaurante",
+      src: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1100&q=74&auto=format&fit=crop",
+      alt: "Prato apresentado em restaurante",
+    },
+    {
+      label: "Oficina",
+      src: "https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=1100&q=74&auto=format&fit=crop",
+      alt: "Mecânico trabalhando em veículo",
+    },
+    {
+      label: "Prestador de serviços",
+      src: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=1100&q=74&auto=format&fit=crop",
+      alt: "Profissional trabalhando em instalação elétrica",
+    },
+  ];
+
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const AUTO_INTERVAL = 5000;
+
+  let currentIndex = 0;
+  let locked = false;
+  let pointerStart = null;
+  let suppressClick = false;
+  let autoTimer = null;
+
+  const normalize = (index) => (index + items.length) % items.length;
+
+  const applyImages = () => {
+    const current = items[currentIndex];
+    const next = items[normalize(currentIndex + 1)];
+
+    mainImage.src = current.src;
+    mainImage.alt = current.alt;
+    mainLabel.textContent = current.label;
+
+    nextImage.src = next.src;
+    nextImage.alt = next.alt;
+    nextLabel.textContent = next.label;
+
+    mainFrame.setAttribute(
+      "aria-label",
+      `Demonstração atual: ${current.label}. Mostrar próxima.`
+    );
+
+    nextFrame.setAttribute(
+      "aria-label",
+      `Próxima demonstração: ${next.label}. Mostrar agora.`
+    );
+
+    if (status) {
+      status.textContent =
+        `Demonstração ${currentIndex + 1} de ${items.length}: ${current.label}.`;
+    }
+  };
+
+  const stopAuto = () => {
+    if (autoTimer) {
+      window.clearInterval(autoTimer);
+      autoTimer = null;
+    }
+  };
+
+  const startAuto = () => {
+    stopAuto();
+
+    if (reducedMotion.matches) return;
+
+    autoTimer = window.setInterval(() => {
+      change(1);
+    }, AUTO_INTERVAL);
+  };
+
+  const restartAuto = () => {
+    stopAuto();
+    startAuto();
+  };
+
+  const change = (direction) => {
+    if (locked) return;
+    locked = true;
+
+    const duration = reducedMotion.matches ? 0 : 420;
+    mainFrame.classList.add("is-changing");
+    nextFrame.classList.add("is-changing");
+
+    window.setTimeout(() => {
+      currentIndex = normalize(currentIndex + direction);
+      applyImages();
+
+      requestAnimationFrame(() => {
+        mainFrame.classList.remove("is-changing");
+        nextFrame.classList.remove("is-changing");
+
+        window.setTimeout(() => {
+          locked = false;
+        }, duration);
+      });
+    }, duration);
+  };
+
+  const activateNext = () => {
+    if (suppressClick) return;
+    change(1);
+    restartAuto();
+  };
+
+  mainFrame.addEventListener("click", activateNext);
+  nextFrame.addEventListener("click", activateNext);
+
+  [mainFrame, nextFrame].forEach((frame) => {
+    frame.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        change(1);
+        restartAuto();
+      }
+
+      if (event.key === "ArrowRight") {
+        event.preventDefault();
+        change(1);
+        restartAuto();
+      }
+
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        change(-1);
+        restartAuto();
+      }
+    });
+
+    frame.addEventListener("mouseenter", stopAuto);
+    frame.addEventListener("mouseleave", startAuto);
+    frame.addEventListener("focusin", stopAuto);
+    frame.addEventListener("focusout", startAuto);
+  });
+
+  root.addEventListener("pointerdown", (event) => {
+    if (event.button !== 0) return;
+
+    stopAuto();
+
+    pointerStart = {
+      id: event.pointerId,
+      x: event.clientX,
+      y: event.clientY,
+    };
+  });
+
+  root.addEventListener("pointerup", (event) => {
+    if (!pointerStart || event.pointerId !== pointerStart.id) return;
+
+    const deltaX = event.clientX - pointerStart.x;
+    const deltaY = event.clientY - pointerStart.y;
+    pointerStart = null;
+
+    if (
+      Math.abs(deltaX) < 48 ||
+      Math.abs(deltaX) <= Math.abs(deltaY)
+    ) {
+      startAuto();
+      return;
+    }
+
+    suppressClick = true;
+    window.setTimeout(() => {
+      suppressClick = false;
+    }, 100);
+
+    change(deltaX < 0 ? 1 : -1);
+    restartAuto();
+  });
+
+  root.addEventListener("pointercancel", () => {
+    pointerStart = null;
+    startAuto();
+  });
+
+  applyImages();
+  startAuto();
+})();
