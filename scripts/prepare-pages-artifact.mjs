@@ -6,6 +6,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const destination = resolve(root, '.pages-artifact');
 const allowlist = [
   'index.html',
+  'CNAME',
   '.nojekyll',
   'robots.txt',
   'sitemap.xml',
