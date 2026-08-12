@@ -39,11 +39,12 @@ for (const entry of allowlist) {
 const rootEntries = await readdir(root);
 const verificationFiles = rootEntries.filter(entry => /^google[a-z0-9_-]+\.html$/i.test(entry));
 
-const bingEntries = rootEntries.filter(entry => /^bingsiteauth.xml$/i.test(entry));
+const bingEntries = rootEntries.filter(entry => /^bingsiteauth\.xml$/i.test(entry));
 for (const entry of bingEntries) {
   const src = resolve(root, entry);
   const content = (await readFile(src, 'utf8')).trim();
-  const m = /<user>([A-F0-9]{32})</user>/i.exec(content) || /<user>([A-F0-9]{32})</user>/i.exec(content);
+  const userTag = content.match(/<user>([A-F0-9]{32})<\/user>/i);
+  if (!userTag) throw new Error(`invalid BingSiteAuth.xml: ${entry}`);
   await cp(src, resolve(destination, entry));
 }
 for (const entry of verificationFiles) {
