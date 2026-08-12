@@ -155,7 +155,12 @@ O projeto também possui:
 - conteúdo institucional próprio;
 - autoria identificada;
 - limites de promessa explícitos;
-- validação automática contra regressões.
+- validação automática contra regressões;
+- guia de descoberta por mecanismos de busca e sistemas de IA (`docs/ai-discovery-guide.md`).
+
+### Descoberta por sistemas de IA
+
+O `robots.txt` libera todos os agentes, o que mantém o site acessível a `Googlebot` (recursos de IA do Google) e a `OAI-SearchBot` (respostas de busca do ChatGPT). O uso do conteúdo para treinamento de modelos (`GPTBot`) segue a mesma regra geral e pode ser restringido separadamente pelo proprietário, se desejado. Consulte `docs/ai-discovery-guide.md` para o detalhamento da entidade, do rastreamento e dos limites.
 
 ### Dados estruturados
 
