@@ -10,6 +10,7 @@ const allowlist = [
   'robots.txt',
   'sitemap.xml',
   'sitemap.txt',
+  'BingSiteAuth.xml',
   'assets',
   'barbearia',
   'oficina',
@@ -37,6 +38,14 @@ for (const entry of allowlist) {
 
 const rootEntries = await readdir(root);
 const verificationFiles = rootEntries.filter(entry => /^google[a-z0-9_-]+\.html$/i.test(entry));
+
+const bingEntries = rootEntries.filter(entry => /^bingsiteauth.xml$/i.test(entry));
+for (const entry of bingEntries) {
+  const src = resolve(root, entry);
+  const content = (await readFile(src, 'utf8')).trim();
+  const m = /<user>([A-F0-9]{32})</user>/i.exec(content) || /<user>([A-F0-9]{32})</user>/i.exec(content);
+  await cp(src, resolve(destination, entry));
+}
 for (const entry of verificationFiles) {
   const source = resolve(root, entry);
   const verificationContent = (await readFile(source, 'utf8')).trim();
