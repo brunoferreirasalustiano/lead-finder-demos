@@ -31,13 +31,15 @@ if (!destination.startsWith(`${root}${sep}`)) throw new Error('unsafe artifact d
 await rm(destination, { recursive: true, force: true });
 await mkdir(destination, { recursive: true });
 
+const rootEntries = await readdir(root);
+const indexNowFiles = rootEntries.filter(entry => /^[a-f0-9]{32}\.txt$/i.test(entry));
+
 for (const entry of allowlist) {
   const source = resolve(root, entry);
   const target = resolve(destination, entry);
   await cp(source, target, { recursive: (await stat(source)).isDirectory() });
 }
 
-const rootEntries = await readdir(root);
 const verificationFiles = rootEntries.filter(entry => /^google[a-z0-9_-]+\.html$/i.test(entry));
 
 const bingEntries = rootEntries.filter(entry => /^bingsiteauth\.xml$/i.test(entry));
@@ -47,6 +49,13 @@ for (const entry of bingEntries) {
   const userTag = content.match(/<user>([A-F0-9]{32})<\/user>/i);
   if (!userTag) throw new Error(`invalid BingSiteAuth.xml: ${entry}`);
   await cp(src, resolve(destination, entry));
+}
+for (const entry of indexNowFiles) {
+  const source = resolve(root, entry);
+  const key = entry.slice(0, -4);
+  const content = (await readFile(source, 'utf8')).trim();
+  if (content !== key) throw new Error(`invalid IndexNow key file: ${entry}`);
+  await cp(source, resolve(destination, entry));
 }
 for (const entry of verificationFiles) {
   const source = resolve(root, entry);
@@ -90,7 +99,7 @@ for (const route of ['servicos/', 'presenca-digital/', 'sobre/', 'privacidade/']
 await writeFile(artifactHome, homeWithInstitutionalLinks, 'utf8');
 
 const actual = (await readdir(destination)).sort();
-const expected = [...allowlist, ...verificationFiles].sort();
+const expected = [...allowlist, ...verificationFiles, ...indexNowFiles].sort();
 if (actual.length !== expected.length || actual.some((entry, index) => entry !== expected[index])) {
   throw new Error('artifact allowlist mismatch');
 }
