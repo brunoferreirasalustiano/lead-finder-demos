@@ -88,7 +88,7 @@ Pagamento por Pix ou cartão em até 10 parcelas, conforme as condições da ope
 - `/servicos/` — escopo, preço, itens incluídos, aplicações e adicionais;
 - `/presenca-digital/` — Google, ferramentas de IA, buscas regionais, `serviços perto de mim` e `empresas perto de mim`;
 - `/sobre/` — responsável, forma de trabalho e princípios;
-- `/privacidade/` — formulários, cookies, analytics, armazenamento, GitHub Pages, Unsplash e WhatsApp.
+- `/privacidade/` — formulários, cookies, analytics, armazenamento, GitHub Pages, imagens locais e WhatsApp.
 
 ### Demonstrações fictícias
 
@@ -243,7 +243,7 @@ O catálogo é independente do runtime do repositório `lead-finder-sem-site`.
 
 ## Imagens e desempenho
 
-As imagens atuais ainda utilizam URLs externas do Unsplash.
+As imagens publicadas ficam em `assets/img/` e são servidas localmente em WebP, sem dependência de hotlink do Unsplash.
 
 Medidas aplicadas:
 
@@ -253,13 +253,14 @@ Medidas aplicadas:
 - `decoding="async"`;
 - `referrerpolicy="no-referrer"`;
 - redução de repetições nas galerias;
+- imagens locais em WebP para a home e demonstrações;
+- imagens Open Graph locais com URLs canônicas absolutas;
 - novas páginas institucionais sem imagens de conteúdo, reduzindo peso adicional.
 
 Pendências futuras:
 
-- confirmar direitos aplicáveis de cada imagem;
-- substituir hotlinks por arquivos locais otimizados;
-- usar WebP ou AVIF;
+- confirmar direitos aplicáveis de cada imagem local;
+- gerar variantes responsivas quando o volume de tráfego justificar;
 - criar imagem Open Graph própria;
 - medir Core Web Vitals após publicação.
 
@@ -279,7 +280,8 @@ Pendências futuras:
 ├── assets/
 │   ├── styles.css
 │   ├── script.js
-│   └── favicon.svg
+│   ├── favicon.svg
+│   └── img/
 ├── robots.txt
 ├── sitemap.xml
 ├── scripts/

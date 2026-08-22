@@ -164,6 +164,8 @@ for (const path of ['assets/styles.css', 'assets/script.js', ...htmlFiles]) {
   const withoutRemoteAssetUrls = content.replace(/https?:\/\/(?:images\.)?unsplash\.com\/[^\s"'<>)]*/gi, '[remote-image]');
   const contactSafeSource = sanitizeAuthorizedContacts(withoutRemoteAssetUrls);
 
+  if (/https:\/\/images\.unsplash\.com/i.test(content)) report(path, 'remote-image');
+
   if (path === 'assets/script.js') {
     if (!content.includes(`const whatsappNumber='${authorizedWhatsapp.phone}'`)) report(path, 'authorized-whatsapp-number-missing');
     if (!content.includes(`const whatsappBase='${authorizedWhatsapp.baseUrl}'`)) report(path, 'authorized-whatsapp-base-missing');

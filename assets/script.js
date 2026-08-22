@@ -219,22 +219,22 @@
   const items = [
     {
       label: "Barbearia",
-      src: "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=1100&q=74&auto=format&fit=crop",
+      src: "assets/img/barbearia-hero.webp",
       alt: "Barbeiro fazendo acabamento em cliente",
     },
     {
       label: "Restaurante",
-      src: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1100&q=74&auto=format&fit=crop",
+      src: "assets/img/restaurante-prato.webp",
       alt: "Prato apresentado em restaurante",
     },
     {
       label: "Oficina",
-      src: "https://images.unsplash.com/photo-1487754180451-c456f719a1fc?w=1100&q=74&auto=format&fit=crop",
+      src: "assets/img/oficina-mecanico.webp",
       alt: "Mecânico trabalhando em veículo",
     },
     {
       label: "Prestador de serviços",
-      src: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=1100&q=74&auto=format&fit=crop",
+      src: "assets/img/prestador-profissional.webp",
       alt: "Profissional trabalhando em instalação elétrica",
     },
   ];
