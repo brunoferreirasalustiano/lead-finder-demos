@@ -36,15 +36,19 @@ jobs:
           grep -Fq 'href="presenca-digital/"' .pages-artifact/index.html
           grep -Fq 'href="sobre/"' .pages-artifact/index.html
           grep -Fq 'href="privacidade/"' .pages-artifact/index.html
+          grep -Fq 'href="nichos/"' .pages-artifact/index.html
+          grep -Fq 'href="nichos/">Nichos</a>' .pages-artifact/index.html
           test -f .pages-artifact/servicos/index.html
           test -f .pages-artifact/presenca-digital/index.html
           test -f .pages-artifact/sobre/index.html
           test -f .pages-artifact/privacidade/index.html
+          test -f .pages-artifact/nichos/index.html
           test -f .pages-artifact/sitemap.xml
           test -f .pages-artifact/sitemap.txt
-          test "$(wc -l < .pages-artifact/sitemap.txt)" -eq 9
+          test "$(wc -l < .pages-artifact/sitemap.txt)" -eq 10
           grep -Fxq 'https://brunoferreirasalustiano.github.io/lead-finder-demos/' .pages-artifact/sitemap.txt
           grep -Fxq 'https://brunoferreirasalustiano.github.io/lead-finder-demos/prestador-servicos/' .pages-artifact/sitemap.txt
+          grep -Fxq 'https://brunoferreirasalustiano.github.io/lead-finder-demos/nichos/' .pages-artifact/sitemap.txt
           grep -Fxq 'Sitemap: https://brunoferreirasalustiano.github.io/lead-finder-demos/sitemap.txt' .pages-artifact/robots.txt
       - name: Validate Search Console verification artifact
         run: |

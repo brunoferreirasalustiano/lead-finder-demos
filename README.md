@@ -89,6 +89,7 @@ Pagamento por Pix ou cartão em até 10 parcelas, conforme as condições da ope
 - `/presenca-digital/` — Google, ferramentas de IA, buscas regionais, `serviços perto de mim` e `empresas perto de mim`;
 - `/sobre/` — responsável, forma de trabalho e princípios;
 - `/privacidade/` — formulários, cookies, analytics, armazenamento, GitHub Pages, imagens locais e WhatsApp.
+- `/nichos/` — perguntas e respostas visíveis sobre sites para diferentes segmentos e modelos de negócio.
 
 ### Demonstrações fictícias
 
@@ -151,7 +152,7 @@ Todas as páginas indexáveis possuem:
 O projeto também possui:
 
 - `robots.txt` liberando rastreamento;
-- `sitemap.xml` com nove URLs;
+- `sitemap.xml` com dez URLs;
 - conteúdo institucional próprio;
 - autoria identificada;
 - limites de promessa explícitos;
@@ -273,6 +274,7 @@ Pendências futuras:
 ├── presenca-digital/
 ├── sobre/
 ├── privacidade/
+├── nichos/
 ├── barbearia/
 ├── oficina/
 ├── restaurante/

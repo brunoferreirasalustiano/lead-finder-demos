@@ -2,6 +2,13 @@
   const menuButton=document.querySelector('[data-menu-button]');
   const menu=document.querySelector('[data-menu]');
 
+  if(menu&&!menu.querySelector('a[href="nichos/"]')){
+    const nichosLink=document.createElement('a');
+    nichosLink.href='nichos/';
+    nichosLink.textContent='Nichos';
+    menu.appendChild(nichosLink);
+  }
+
   if(menuButton&&menu){
     menuButton.addEventListener('click',()=>{
       const open=menu.classList.toggle('open');

@@ -15,6 +15,7 @@ const institutionalHtmlFiles = [
   'servicos/index.html',
   'presenca-digital/index.html',
   'privacidade/index.html',
+  'nichos/index.html',
 ];
 const htmlFiles = [
   'index.html',
@@ -31,6 +32,7 @@ const pageUrls = new Map([
   ['servicos/index.html', `${siteBase}servicos/`],
   ['presenca-digital/index.html', `${siteBase}presenca-digital/`],
   ['privacidade/index.html', `${siteBase}privacidade/`],
+  ['nichos/index.html', `${siteBase}nichos/`],
 ]);
 const requiredFiles = [
   ...htmlFiles,
