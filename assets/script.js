@@ -199,6 +199,28 @@
   });
 })();
 
+(() => {
+  const hero = document.querySelector(".hero");
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+  if (
+    !hero ||
+    reducedMotion.matches ||
+    typeof window.WebGL2RenderingContext === "undefined"
+  ) {
+    return;
+  }
+
+  const currentScript = document.currentScript;
+  const assetsBase = currentScript?.src
+    ? new URL(".", currentScript.src)
+    : new URL("assets/", document.baseURI);
+  const plasmaScript = document.createElement("script");
+  plasmaScript.src = new URL("plasma.js", assetsBase).href;
+  plasmaScript.async = true;
+  document.head.appendChild(plasmaScript);
+})();
+
 // Lead Finder Brasil: troca de imagens no tamanho original
 (() => {
   const root = document.querySelector("[data-hero-gallery]");

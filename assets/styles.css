@@ -201,3 +201,82 @@
 }
 
 /* END Lead Finder Brasil: efeitos suaves */
+
+/* BEGIN Lead Finder Brasil: plasma WebGL global */
+body {
+  position: relative;
+  isolation: isolate;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  z-index: -1;
+  top: 50%;
+  left: 50%;
+  width: min(110vmax, 1200px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--brand) 24%, transparent),
+    transparent 68%
+  );
+  opacity: .5;
+  pointer-events: none;
+}
+
+body.plasma-active::before {
+  opacity: .12;
+}
+
+.page-plasma {
+  position: fixed;
+  z-index: -1;
+  top: 50%;
+  left: 50%;
+  width: min(110vmax, 1200px);
+  aspect-ratio: 1;
+  overflow: hidden;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.page-plasma canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.hero {
+  background:
+    radial-gradient(circle at 8% 12%, color-mix(in srgb, var(--brand) 13%, transparent), transparent 33%),
+    radial-gradient(circle at 92% 18%, color-mix(in srgb, var(--brand) 18%, transparent), transparent 30%),
+    linear-gradient(135deg, rgb(247 251 247 / 78%) 0%, rgb(251 248 243 / 74%) 58%, rgb(247 239 227 / 78%) 100%);
+}
+
+.dark-section,
+.footer {
+  background: rgb(11 18 24 / 94%);
+}
+
+@media (max-width: 680px) {
+  body::before,
+  .page-plasma {
+    width: 135vmax;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-plasma {
+    display: none;
+  }
+
+  body::before,
+  body.plasma-active::before {
+    opacity: .28;
+  }
+}
+
+/* END Lead Finder Brasil: plasma WebGL global */

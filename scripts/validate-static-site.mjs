@@ -38,6 +38,7 @@ const requiredFiles = [
   ...htmlFiles,
   'assets/styles.css',
   'assets/script.js',
+  'assets/plasma.js',
   'assets/favicon.svg',
   'robots.txt',
   'sitemap.xml',
@@ -160,7 +161,7 @@ for (const path of htmlFiles) {
   }
 }
 
-for (const path of ['assets/styles.css', 'assets/script.js', ...htmlFiles]) {
+for (const path of ['assets/styles.css', 'assets/script.js', 'assets/plasma.js', ...htmlFiles]) {
   if (!(await isFile(resolve(root, path)))) continue;
   const content = await readFile(resolve(root, path), 'utf8');
   const withoutRemoteAssetUrls = content.replace(/https?:\/\/(?:images\.)?unsplash\.com\/[^\s"'<>)]*/gi, '[remote-image]');
@@ -173,6 +174,7 @@ for (const path of ['assets/styles.css', 'assets/script.js', ...htmlFiles]) {
     if (!content.includes(`const whatsappBase='${authorizedWhatsapp.baseUrl}'`)) report(path, 'authorized-whatsapp-base-missing');
     if (!content.includes('data-message') && !content.includes('dataset.message')) report(path, 'per-page-contact-message-support-missing');
     if (!content.includes('Pacote Essencial')) report(path, 'default-package-message-missing');
+    if (!content.includes('plasma.js')) report(path, 'plasma-loader-missing');
   }
 
   const checks = [
