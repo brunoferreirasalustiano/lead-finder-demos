@@ -6,7 +6,6 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const destination = resolve(root, '.pages-artifact');
 const allowlist = [
   'index.html',
-  'CNAME',
   '.nojekyll',
   'robots.txt',
   'sitemap.xml',
@@ -113,7 +112,7 @@ if (actual.length !== expected.length || actual.some((entry, index) => entry !==
   throw new Error('artifact allowlist mismatch');
 }
 
-for (const forbidden of ['.git', '.github', 'README.md', 'scripts']) {
+for (const forbidden of ['.git', '.github', 'README.md', 'scripts', 'CNAME']) {
   const candidate = resolve(destination, forbidden);
   try {
     await stat(candidate);

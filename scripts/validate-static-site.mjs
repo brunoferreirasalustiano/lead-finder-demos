@@ -4,6 +4,17 @@ import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const siteBase = 'https://brunoferreirasalustiano.github.io/lead-finder-demos/';
+const googleAnalyticsMeasurementId = 'G-RKVB3NW659';
+const googleAnalyticsScriptUrl = `https://www.googletagmanager.com/gtag/js?id=${googleAnalyticsMeasurementId}`;
+const googleAnalyticsSnippet = `
+  <!-- Google tag (gtag.js) -->
+  <script async src="${googleAnalyticsScriptUrl}"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', '${googleAnalyticsMeasurementId}');
+  </script>`;
 const demoHtmlFiles = [
   'barbearia/index.html',
   'oficina/index.html',
@@ -93,6 +104,10 @@ function sanitizeAuthorizedContacts(content) {
     .replaceAll(`mailto:${authorizedEmail}`, '[authorized-mailto]');
 }
 
+function removeApprovedAnalyticsSnippet(content) {
+  return content.replace(googleAnalyticsSnippet, '[approved-google-analytics-snippet]');
+}
+
 for (const path of requiredFiles) {
   if (!(await isFile(resolve(root, path)))) report(path, 'required-file-missing');
 }
@@ -121,8 +136,13 @@ for (const path of htmlFiles) {
   if (!/<script\b[^>]*\btype=["']application\/ld\+json["'][^>]*>/i.test(content)) report(path, 'structured-data-missing');
   if ((content.match(/<h1\b/gi) ?? []).length !== 1) report(path, 'single-h1-required');
   if (demoHtmlFiles.includes(path) && !/(?:fictíci[oa]s?|fictícios)/iu.test(content)) report(path, 'fictional-content-notice-missing');
-  if (/<script\b[^>]*\bsrc=["'](?:https?:)?\/\//i.test(content)) report(path, 'remote-script');
+  const remoteScriptSources = [...content.matchAll(/<script\b[^>]*\bsrc=["']((?:https?:)?\/\/[^"']+)["']/gi)].map(match => match[1]);
+  if (remoteScriptSources.length !== 1 || remoteScriptSources[0] !== googleAnalyticsScriptUrl) report(path, 'remote-script-missing-or-unapproved');
+  const googleAnalyticsTagCount = content.split(googleAnalyticsSnippet).length - 1;
+  if (googleAnalyticsTagCount !== 1) report(path, 'google-analytics-tag-count-invalid');
+  if (!content.includes(`<head>${googleAnalyticsSnippet}`)) report(path, 'google-analytics-tag-not-immediately-after-head');
   if (/<form\b[^>]*\baction=["'](?:https?:)?\/\//i.test(content)) report(path, 'external-form-action');
+  if (!/(?:\.\.\/)?assets\/script\.js/i.test(content)) report(path, 'shared-script-missing');
 
   const contactTags = [...content.matchAll(/<a\b[^>]*\bdata-contact\b[^>]*>/gi)].map(match => match[0]);
   if (!contactTags.length) report(path, 'contact-link-missing');
@@ -140,7 +160,7 @@ for (const path of htmlFiles) {
     if (/a partir de\s*(?:<[^>]+>\s*)*R\$\s*650/iu.test(content)) report(path, 'ambiguous-base-price');
     if (!/Pacote Essencial/iu.test(content)) report(path, 'essential-package-missing');
     if (!/Bruno F\. Salustiano/iu.test(content)) report(path, 'responsible-person-missing');
-    if (!/Este site não possui formulários, cookies próprios, analytics ou armazenamento/iu.test(content)) report(path, 'privacy-summary-missing');
+    if (!/Google Analytics 4 para métricas agregadas/iu.test(content)) report(path, 'privacy-summary-missing');
   }
 
   if (path === 'presenca-digital/index.html') {
@@ -151,7 +171,7 @@ for (const path of htmlFiles) {
 
   if (path === 'privacidade/index.html') {
     if (!/sem coleta direta de dados pessoais/iu.test(content)) report(path, 'privacy-purpose-missing');
-    if (!/não possui mecanismos próprios de rastreamento/iu.test(content)) report(path, 'tracking-disclaimer-missing');
+    if (!/Google Analytics 4/iu.test(content)) report(path, 'tracking-disclaimer-missing');
   }
 
   const referencePattern = /\b(?:href|src)\s*=\s*["']([^"']+)["']/gi;
@@ -175,11 +195,12 @@ for (const path of ['assets/styles.css', 'assets/script.js', 'assets/plasma.js',
     if (!content.includes('data-message') && !content.includes('dataset.message')) report(path, 'per-page-contact-message-support-missing');
     if (!content.includes('Pacote Essencial')) report(path, 'default-package-message-missing');
     if (!content.includes('plasma.js')) report(path, 'plasma-loader-missing');
+    if (content.includes(googleAnalyticsMeasurementId) || /googletagmanager\.com/i.test(content)) report(path, 'google-analytics-loader-must-not-be-dynamic');
   }
 
   const checks = [
     ['localhost-or-loopback', /\b(?:localhost|127\.0\.0\.1|0\.0\.0\.0)\b/i, content],
-    ['tracking-or-analytics', /(?:google-analytics\.com|googletagmanager\.com|facebook\.com\/tr|connect\.facebook\.net|hotjar\.com|clarity\.ms|segment\.com|analytics\s*\()/i, content],
+    ['tracking-or-analytics', /(?:google-analytics\.com|googletagmanager\.com|facebook\.com\/tr|connect\.facebook\.net|hotjar\.com|clarity\.ms|segment\.com|analytics\s*\()/i, removeApprovedAnalyticsSnippet(content)],
     ['network-api', /\b(?:fetch\s*\(|XMLHttpRequest\b|WebSocket\s*\()/i, content],
     ['secret-pattern', /(?:-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|\bgh[pousr]_[A-Za-z0-9]{20,}|\bAKIA[0-9A-Z]{16}\b|\b(?:api[_-]?key|client[_-]?secret|access[_-]?token)\s*[:=]\s*["'][^"']{8,})/i, content],
     ['phone-number', /(?:\+?55\s*)?(?:\(?\d{2}\)?[\s.-]*)?9?\d{4}[\s.-]*\d{4}\b/, contactSafeSource],

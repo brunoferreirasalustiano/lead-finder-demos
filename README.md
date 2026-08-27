@@ -217,16 +217,16 @@ O site não utiliza:
 O site não possui:
 
 - formulários;
-- cookies próprios;
-- Google Analytics;
+- cookies próprios de publicidade;
 - pixels de publicidade;
-- tracking;
 - armazenamento local;
 - banco de dados;
 - autenticação;
 - coleta direta de telefone, e-mail ou mensagem;
 - API de envio;
 - webhook.
+
+O site utiliza o Google Analytics 4 (`G-RKVB3NW659`) para métricas agregadas de acesso. O snippet oficial está declarado logo após a abertura de `<head>`, uma única vez em cada uma das dez páginas públicas. Nomes, telefones, e-mails e mensagens não são enviados como parâmetros de análise.
 
 Ao clicar em um botão comercial, o visitante é encaminhado ao domínio oficial `wa.me`.
 
@@ -342,6 +342,8 @@ As seguintes ações dependem de acesso ou decisão fora do repositório:
 - criar Perfil da Empresa no Google somente se a operação for elegível;
 - obter links e referências externas legítimas;
 - adicionar cases e avaliações reais após entregas autorizadas.
+
+O domínio próprio permanece desativado enquanto o DNS e a configuração do GitHub Pages não estiverem concluídos. Até essa ativação, o artefato publicado não deve conter um arquivo `CNAME`; URLs canônicas, sitemaps e ferramentas de busca continuam usando o endereço oficial do GitHub Pages.
 
 ## Cases e resultados
 
